@@ -18,14 +18,12 @@ USE AdventureWorksDW2022;
 
 		** will be shown as they are, in the final result
 
-	- Flow:
-		Group Sales by quarters, per reseller key
 
 */
 
 
 WITH 
-cte1 AS(
+cte1 AS(  -- Joining and casting dates into quarters.
 	SELECT 
 		g.EnglishCountryRegionName country,
 		c.EnglishProductCategoryName category,
@@ -43,7 +41,7 @@ cte1 AS(
 	JOIN dbo.DimProductCategory c
 		ON sc.ProductCategoryKey = c.ProductCategoryKey
 ), 
-cte2 AS(
+cte2 AS(  -- Create matrix with sales per category per country.
 	SELECT 
 		country,
 		category,
@@ -59,7 +57,7 @@ cte2 AS(
 )
 SELECT 
 	*,
-	((cte2.q4_sale / cte2.q1_sale) - 1)*100 'growth (%)'
+	((cte2.q4_sale / cte2.q1_sale) - 1)*100 'growth (%)'  -- Adding column with growth rate.
 FROM cte2
 ORDER BY 
 	cte2.country,
