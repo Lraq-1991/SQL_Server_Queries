@@ -29,7 +29,7 @@ USE AdventureWorksDW2022;
 */
 
 WITH 
-cx_list AS(  -- Ranking cx´s purchases
+cx_list AS(  -- Ranking cxï¿½s purchases
 	SELECT 
 		fis.CustomerKey customer,
 		c.EnglishProductCategoryName category,
@@ -54,9 +54,9 @@ cx_list AS(  -- Ranking cx´s purchases
 ,sequence_CTE AS( -- Creating the matrix of categories per customer
 	SELECT 
 		customer,
-		[1] AS a,
-		[2] AS b,
-		[3] AS c
+		[1] AS first_purchase,
+		[2] AS second_purchase,
+		[3] AS third_purchase
 	FROM filtered_table AS SourceTable
 	PIVOT(
 		MAX(category) FOR order_rank
@@ -64,11 +64,17 @@ cx_list AS(  -- Ranking cx´s purchases
 	) AS pivotedTable
 )
 SELECT 
-	a + '->' + b + '->' + c PurchaseSequence,  -- Formating for a cleaner presentation
+	first_purchase + '->' + second_purchase + '->' + third_purchase PurchaseSequence,  -- Formating for a cleaner presentation
 	COUNT(customer) cx_count
 FROM sequence_CTE
-WHERE a != b AND b != c AND a != c  -- Showing just distinct combinations
-GROUP BY a,b,c
+WHERE              -- Showing just distinct combinations
+	first_purchase != second_purchase 
+	AND second_purchase != third_purchase 
+	AND first_purchase != third_purchase  
+GROUP BY 
+	first_purchase,
+	second_purchase,
+	third_purchase
 ORDER BY cx_count DESC
 ;
 
