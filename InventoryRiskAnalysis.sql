@@ -3,7 +3,7 @@
 /*
 
 	Identify products that are at high risk of stock depletion. 
-	To do this, you must find products whose sales volume in the last 30 days (of 2021) 
+	To do this, you must find products whose sales volume in the last 30 days 
 	is at least 20% higher than their average daily sales in the previous 90 days. 
 	The query should list the product name, total sales volume over the last 30 days, 
 	and average daily sales over the previous 90 days.
