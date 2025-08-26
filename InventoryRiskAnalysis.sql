@@ -18,7 +18,7 @@ USE AdventureWorksDW2022;
 
 
 WITH 
-sales_CTE AS( -- Get ranked product sales count per month per product
+sales_CTE AS(                                          -- Get ranked product sales count per month per product
 	SELECT 
 		p.EnglishProductName prod_name,
 		FORMAT(s.OrderDate, 'yyyy, MMMM') order_date,  -- Cast to month per year
