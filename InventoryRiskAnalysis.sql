@@ -59,3 +59,4 @@ FROM last_month_CTE cte1
 JOIN last_quarter_sale_CTE cte2
 	ON cte1.prod_name = cte2.prod_name
 ORDER BY [Sales Growth (%)] DESC
+;
