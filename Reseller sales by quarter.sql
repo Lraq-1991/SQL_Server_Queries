@@ -65,6 +65,3 @@ ORDER BY
 ;
 
 
-
-SELECT *
-FROM dbo.FactResellerSales
