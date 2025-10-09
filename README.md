@@ -1,5 +1,4 @@
-## **SQL Server Exercises for AdventureWorks 2022** 
-
+## **SQL Server Exercises** 
 
 
 This repository contains a collection of _SQL Server_ exercises focused on using advanced techniques for Data Analysis purposes.
