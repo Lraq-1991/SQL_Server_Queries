@@ -1,5 +1,7 @@
-SET NOCOUNT ON;
+NOCOUNT ON;
 USE tempdb;
+
+-- 1. LOGICAL QUERY PROCESSING
 
 ----------------------------------------------------
 
@@ -118,3 +120,64 @@ SELECT
 	custid
 FROM MyOrders;
 GO
+
+-------------------------
+
+-- Table Operators: JOIN, APPLY, PIVOT and UNPIVOT
+
+-- CROSS APPLY: applies right expression to left table rows
+
+SELECT 
+	c.custid,
+	c.city,
+	a.orderid
+FROM Customers c
+	CROSS APPLY (
+		SELECT TOP (2) 
+			o.orderid,
+			o.custid
+		FROM Orders o
+		WHERE o.custid = c.custid
+		ORDER BY orderid DESC
+	) a;
+GO
+
+-- OUTER APPLY: adds outer rows
+
+SELECT 
+	c.custid,
+	c.city,
+	a.orderid
+FROM Customers c
+	OUTER APPLY(
+		SELECT TOP(2)
+			o.orderid,
+			o.custid
+		FROM Orders o
+		WHERE o.custid = c.custid
+	) a;
+GO
+
+
+-- PIVOT: Rotates data from rows to columns
+
+WITH cte AS
+(
+	SELECT
+		c.city city,
+		o.custid customer,
+		o.orderid orderid
+	FROM Orders o
+	JOIN Customers c
+		ON c.custid = o.custid
+)
+SELECT 
+	customer,
+	"Madrid",
+	"Zion"
+FROM cte AS d
+PIVOT(
+	COUNT(orderid) FOR city
+	IN("Madrid","Zion")
+) AS p;
+
