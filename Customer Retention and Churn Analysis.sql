@@ -10,6 +10,8 @@
 	and their lifetime average order value.
 */
 
+-- USE AdventureWorks2022
+
 DECLARE @LastDate DATETIME;
 
 SELECT TOP (1)
@@ -18,7 +20,7 @@ SELECT TOP (1)
 	)
 FROM Sales.SalesOrderHeader;
 
-WITH cte1 AS(
+WITH cte1 AS(  -- Extract necessary columns to make the next calculations
 	SELECT  
 		YEAR(OrderDate) OrderYear,
 		OrderDate,
@@ -27,7 +29,7 @@ WITH cte1 AS(
 		DATEDIFF(MONTH, @LastDate, OrderDate) LastOrderGap
 	FROM Sales.SalesOrderHeader
 ),
-cte2 AS(
+cte2 AS( -- Filter records with 6 months from last purchase, from 2013 and at least 3 purchases 
 	SELECT 
 		OrderYear,
 		CustomerID,
@@ -38,9 +40,9 @@ cte2 AS(
 	GROUP BY 
 		OrderYear,
 		CustomerID
-	HAVING COUNT(DISTINCT SalesOrderID) >= 3
+	HAVING COUNT(DISTINCT SalesOrderID) >= 3 -- This filter is applied after WHERE clause
 ),
-cte3 AS(
+cte3 AS(	-- Calculate days gap, avg total per customer and last order value
 	SELECT DISTINCT 
 		c2.CustomerID,
 		soh.OrderDate,
@@ -51,11 +53,11 @@ cte3 AS(
 				ORDER BY soh.OrderDate
 			),
 			soh.OrderDate
-		) DaysGap,
+		) DaysGap,	-- Days gap between orders
 		soh.TotalDue,
 		AVG(soh.TotalDue) OVER(
 			PARTITION BY c2.CustomerID
-		) OrderAvg,
+		) OrderAvg,	-- Avg order total value
 		LAST_VALUE(soh.TotalDue) OVER(
 			PARTITION BY c2.CustomerID
 			ORDER BY soh.OrderDate
@@ -66,14 +68,19 @@ cte3 AS(
 		ON c2.CustomerID = soh.CustomerID
 )
 SELECT 
-	CustomerID,
-	OrderAvg - LastOrderValue OrderValueDeviation,
-	AVG(DaysGap) AvgDayGap
+	cte3.CustomerID,
+	p.FirstName + ' ' + p.LastName Customer,
+	cte3.OrderAvg - cte3.LastOrderValue OrderValueDeviation,
+	AVG(cte3.DaysGap) AvgDayGap
 FROM cte3
+JOIN Sales.Customer sc
+	ON cte3.CustomerID = sc.CustomerID
+JOIN Person.Person p
+	ON sc.PersonID = p.BusinessEntityID
 GROUP BY 
-	CustomerID,
-	OrderAvg - LastOrderValue
-
-
+	cte3.CustomerID,
+	p.FirstName + ' ' + p.LastName,
+	cte3.OrderAvg - cte3.LastOrderValue
+ORDER BY AvgDayGap DESC
 
 
