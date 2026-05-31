@@ -2,37 +2,37 @@
 
 /*
 
-	Identify products that are at high risk of stock depletion. 
+	Challenge: Identify products that are at high risk of stock depletion. 
 	To do this, you must find products whose sales volume in the last 30 days 
 	is at least 20% higher than their average daily sales in the previous 90 days. 
 	The query should list the product name, total sales volume over the last 30 days, 
 	and average daily sales over the previous 90 days.
 
-	Tables: FactInternet, DimProduct
-
 */
 
 
-USE AdventureWorksDW2022;
+-- USE AdventureWorks2022;
 
 
 
 WITH 
 sales_CTE AS(		-- Get ranked product sales count per month per product
 	SELECT 
-		p.EnglishProductName prod_name,
-		FORMAT(s.OrderDate, 'yyyy, MMMM') order_date,  	-- Cast to month per year
-		COUNT(s.ProductKey) sold,		-- Get how much I sold of that product
-		ROW_NUMBER() OVER(		-- Create ranking per product and ordered by month
-			PARTITION BY p.EnglishProductName
-			ORDER BY FORMAT(s.OrderDate, 'yyyy, MMMM') DESC
+		pp.Name prod_name,
+		FORMAT(soh.OrderDate, 'yyyy, MMMM') order_date,	-- Cast to month per year
+		COUNT(sod.ProductID) sold,	-- Get how much I sold of that product
+		ROW_NUMBER() OVER(	-- Create ranking per product and ordered by month
+			PARTITION BY pp.Name
+			ORDER BY FORMAT(soh.OrderDate, 'yyyy, MMMM') DESC
 		) AS month_rank
-	FROM FactInternetSales s
-	JOIN DimProduct p
-		ON s.ProductKey = p.ProductKey
+	FROM Sales.SalesOrderHeader soh
+	JOIN Sales.SalesOrderDetail sod
+		ON soh.SalesOrderID = sod.SalesOrderID
+	JOIN Production.Product pp
+		ON sod.ProductID = pp.ProductID
 	GROUP BY
-		p.EnglishProductName,
-		FORMAT(s.OrderDate, 'yyyy, MMMM')
+		pp.Name,
+		FORMAT(soh.OrderDate, 'yyyy, MMMM')
 )
 ,last_month_CTE AS(		-- Get last month sales per product
 	SELECT 
@@ -50,7 +50,7 @@ sales_CTE AS(		-- Get ranked product sales count per month per product
 	GROUP BY prod_name
 )
 SELECT 
-	cte1.prod_name,
+	cte1.prod_name 'Product Name',
 	cte1.last_month_sale 'Last Month Sales',
 	cte2.avg_sales 'Avg. Sales Last Quarter',
 	((cte1.last_month_sale - (cte2.avg_sales * 30))   
@@ -60,3 +60,7 @@ JOIN last_quarter_sale_CTE cte2
 	ON cte1.prod_name = cte2.prod_name
 ORDER BY [Sales Growth (%)] DESC
 ;
+
+
+
+
